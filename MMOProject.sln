@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34003.232
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MMOProject", "MMOProject\MMOProject.csproj", "{42E522A6-D725-45BA-AF69-AED6D190BD23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{9ADCFDA1-712E-4A3E-B21A-2BDF16132C6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{71F1556E-D839-48A3-9700-C3F62EE571F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42E522A6-D725-45BA-AF69-AED6D190BD23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42E522A6-D725-45BA-AF69-AED6D190BD23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42E522A6-D725-45BA-AF69-AED6D190BD23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42E522A6-D725-45BA-AF69-AED6D190BD23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9ADCFDA1-712E-4A3E-B21A-2BDF16132C6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9ADCFDA1-712E-4A3E-B21A-2BDF16132C6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9ADCFDA1-712E-4A3E-B21A-2BDF16132C6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9ADCFDA1-712E-4A3E-B21A-2BDF16132C6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71F1556E-D839-48A3-9700-C3F62EE571F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71F1556E-D839-48A3-9700-C3F62EE571F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71F1556E-D839-48A3-9700-C3F62EE571F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71F1556E-D839-48A3-9700-C3F62EE571F9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0BA86D2A-B1D5-4F4D-A94F-E62DABA03070}
+	EndGlobalSection
+EndGlobal
