@@ -14,20 +14,22 @@ namespace Core
         public string Id { get; private set; }
 
         private Socket _socket;
+        private Server _server;
         private SocketAsyncEventArgs _recvArgs;
         private SocketAsyncEventArgs _sendArgs;
         private int _recvBufferSize;
 
-        public Connection()
-            : this(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+        public Connection(Server server)
+            : this(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), server)
         {
         }
 
-        public Connection(Socket socket)
+        public Connection(Socket socket, Server server)
         {
             Id = Guid.NewGuid().ToString();
 
             _socket = socket;
+            _server = server;
 
             _recvBufferSize = 1024;
             _recvArgs = new SocketAsyncEventArgs();
@@ -47,6 +49,16 @@ namespace Core
                 OnReceiveCompleted(null, _recvArgs);
         }
 
+        public void Send(string message)
+        {
+            var sendBuffer = Encoding.UTF8.GetBytes(message);
+            _sendArgs.SetBuffer(sendBuffer, 0, sendBuffer.Length);
+
+            var pending = _socket.SendAsync(_recvArgs);
+            if (!pending)
+                OnSendCompleted(null, _recvArgs);
+        }    
+
         private byte[] GetRecvBuffer(int size)
         {
             return new byte[size];
@@ -54,7 +66,6 @@ namespace Core
 
         private void OnSendCompleted(object? sender, SocketAsyncEventArgs args)
         {
-            
         }
 
         private void OnReceiveCompleted(object? sender, SocketAsyncEventArgs args)
@@ -72,13 +83,16 @@ namespace Core
                 return;
 
             var recvMessage = Encoding.UTF8.GetString(recvBuffer);
-            Console.WriteLine(recvMessage);
+            Console.WriteLine("hello client");
+
+            Send(recvMessage);
 
             StartReceive();
         }
 
         private void CloseSocket()
         {
+            _server.OnLeaveConnection(this);
             _socket.Close();
         }
     }

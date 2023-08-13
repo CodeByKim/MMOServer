@@ -26,11 +26,11 @@ namespace Core
                 var args = new SocketAsyncEventArgs();
                 args.Completed += OnAcceotCompleted;
 
-                TryAccept(args);
+                StartAccept(args);
             }
         }
 
-        private void TryAccept(SocketAsyncEventArgs args)
+        private void StartAccept(SocketAsyncEventArgs args)
         {
             args.AcceptSocket = null;
             var pending = _socket.AcceptAsync(args);
@@ -48,11 +48,11 @@ namespace Core
             if (socket is null)
                 return;
 
-            Connection conn = new Connection(socket);
+            Connection conn = new Connection(socket, _server);
             _server.OnJoinConnection(conn);
             conn.StartReceive();
 
-            TryAccept(args);
+            StartAccept(args);
         }
     }
 }
