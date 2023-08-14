@@ -5,7 +5,7 @@ public class Program
     public static void Main(string[] args)
     {
         var port = 8888;
-        GameServer server = new GameServer(port);
+        var server = new GameServer(port);
         server.Run();
 
         Console.ReadLine();

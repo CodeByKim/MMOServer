@@ -7,52 +7,31 @@ namespace Core
 {
     public class Acceptor
     {
-        private Socket _socket;
+        private TcpSocket _socket;
         private Server _server;
 
         public Acceptor(Server server)
         {
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _socket = new TcpSocket();
             _server = server;
         }
 
         public void Run(int port, int backlog, int acceptCount)
         {
-            _socket.Bind(new IPEndPoint(IPAddress.Any, port));
-            _socket.Listen(backlog);
+            _socket.Listen(port, backlog);
 
-            for (int i = 0; i < acceptCount; i++)
+            _socket.AcceptAsnyc(10, (socketError, socket) =>
             {
-                var args = new SocketAsyncEventArgs();
-                args.Completed += OnAcceotCompleted;
+                if (socketError != SocketError.Success)
+                    return;
 
-                StartAccept(args);
-            }
-        }
+                if (socket is null)
+                    return;
 
-        private void StartAccept(SocketAsyncEventArgs args)
-        {
-            args.AcceptSocket = null;
-            var pending = _socket.AcceptAsync(args);
-            if (!pending)
-                OnAcceotCompleted(null, args);
-        }
-
-        private void OnAcceotCompleted(object? sender, SocketAsyncEventArgs args)
-        {
-            var socketError = args.SocketError;
-            if (socketError != SocketError.Success)
-                return;
-
-            var socket = args.AcceptSocket;
-            if (socket is null)
-                return;
-
-            Connection conn = new Connection(socket, _server);
-            _server.OnJoinConnection(conn);
-            conn.StartReceive();
-
-            StartAccept(args);
+                Connection conn = new Connection(socket);
+                _server.OnJoinConnection(conn);
+                conn.DoReceive();
+            });
         }
     }
 }
