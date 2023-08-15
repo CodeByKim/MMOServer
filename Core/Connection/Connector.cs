@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
-namespace Core
+namespace Core.Connection
 {
     public class Connector : Connection
     {
@@ -39,6 +38,13 @@ namespace Core
 
         private void OnConnectCompleted(object? sender, SocketAsyncEventArgs args)
         {
+            var socketError = args.SocketError;
+            if (socketError != SocketError.Success)
+            {
+                Console.WriteLine(socketError);
+                return;
+            }
+
             IsConnected = true;
             var onConnect = args.UserToken as Action;
             if (onConnect != null)

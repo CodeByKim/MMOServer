@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Core
+namespace Core.Connection
 {
     public class TcpSocket
     {
@@ -41,27 +41,6 @@ namespace Core
                 OnSendCompleted(null, _sendArgs);
         }
 
-        internal void Listen(int port, int backlog)
-        {
-            if (Socket is null)
-                return;
-
-            Socket.Bind(new IPEndPoint(IPAddress.Any, port));
-            Socket.Listen(backlog);
-        }
-
-        internal void AcceptAsnyc(int concurrentCount, Action<SocketError, Socket> onAccept)
-        {
-            for (int i = 0; i < concurrentCount; i++)
-            {
-                var args = new SocketAsyncEventArgs();
-                args.Completed += OnAcceotCompleted;
-                args.UserToken = onAccept;
-
-                TryAccept(args);
-            }
-        }
-
         internal void ReceiveAsync()
         {
             if (Socket is null)
@@ -79,29 +58,10 @@ namespace Core
             return new byte[size];
         }
 
-        private void TryAccept(SocketAsyncEventArgs args)
-        {
-            if (Socket is null)
-                return;
-
-            args.AcceptSocket = null;
-            var pending = Socket.AcceptAsync(args);
-            if (!pending)
-                OnAcceotCompleted(null, args);
-        }
-
-        private void OnAcceotCompleted(object? sender, SocketAsyncEventArgs args)
-        {
-            var onAccept = args.UserToken as Action<SocketError, Socket>;
-            if (onAccept is null)
-                return;
-
-            onAccept(args.SocketError, args.AcceptSocket);
-            TryAccept(args);
-        }
-
         private void OnSendCompleted(object? sender, SocketAsyncEventArgs args)
         {
+            if (OnSendEventHandler != null)
+                OnSendEventHandler();
         }
 
         private void OnReceiveCompleted(object? sender, SocketAsyncEventArgs args)

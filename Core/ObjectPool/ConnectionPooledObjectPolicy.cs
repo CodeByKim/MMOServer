@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using Core.Connection;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Core
+namespace Core.ObjectPool
 {
     public class ConnectionPooledObjectPolicy : IPooledObjectPolicy<ServerConnection>
     {

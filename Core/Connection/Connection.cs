@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Core
+namespace Core.Connection
 {
     public abstract class Connection
     {

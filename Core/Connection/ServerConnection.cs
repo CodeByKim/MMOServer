@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Core
+namespace Core.Connection
 {
     public class ServerConnection : Connection
     {
