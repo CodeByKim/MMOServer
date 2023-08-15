@@ -8,18 +8,16 @@ namespace Core.Buffer
     {
         public int UseSize { get; private set; }
         public int FreeSize => _buffer.Length - UseSize;
-
+        public int BufferEnd => _buffer.Length;
         private byte[] _buffer;
         private int _bufferFront;
         private int _bufferRear;
-        private int _bufferEnd;
 
         public RingBuffer(int bufferSize)
         {
             _buffer = new byte[bufferSize];
             _bufferFront = 0;
             _bufferRear = 0;
-            _bufferEnd = bufferSize;
             UseSize = 0;
         }
 
@@ -29,14 +27,14 @@ namespace Core.Buffer
             if (srcDataSize > FreeSize)
                 return false;
 
-            if (srcDataSize <= _bufferEnd - _bufferRear)
+            if (srcDataSize <= BufferEnd - _bufferRear)
             {
                 Array.Copy(srcData, 0, _buffer, _bufferRear, srcDataSize);
                 _bufferRear += srcDataSize;
             }
             else
             {
-                int rearRemainSize = _bufferEnd - _bufferRear;
+                int rearRemainSize = BufferEnd - _bufferRear;
                 Array.Copy(srcData, 0, _buffer, _bufferRear, rearRemainSize);
                 _bufferRear = 0;
 
@@ -55,14 +53,14 @@ namespace Core.Buffer
                 return null;
 
             var data = new byte[size];
-            if (size <= _bufferEnd - _bufferFront)
+            if (size <= BufferEnd - _bufferFront)
             {
                 Array.Copy(_buffer, _bufferFront, data, 0, size);
                 _bufferFront += size;
             }
             else
             {
-                int frontDataSize = _bufferEnd - _bufferFront;
+                int frontDataSize = BufferEnd - _bufferFront;
                 Array.Copy(_buffer, _bufferFront, data, 0, frontDataSize);
                 _bufferFront = 0;
 
@@ -83,6 +81,8 @@ namespace Core.Buffer
         public void Clear()
         {
             Array.Clear(_buffer);
+            _bufferFront = 0;
+            _bufferRear = 0;
         }
     }
 }

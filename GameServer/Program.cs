@@ -33,6 +33,8 @@ public class Program
 
     public static void Main(string[] args)
     {
+        //RingBufferTest();
+
         var port = 8888;
         var server = new GameServer(port);
         server.Run();
