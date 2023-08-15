@@ -4,30 +4,55 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
+public class TestClient
+{
+    private string _ip;
+    private int _port;
+
+    private Connector _connector;
+
+    public TestClient(string ip, int port)
+    {
+        _ip = ip;
+        _port = port;
+
+        _connector = new Connector();
+        _connector.OnDisconnectEventHandler = OnDisconnected;
+    }
+
+    public void Run()
+    {
+        _connector.ConnectAsync(_ip, _port, () =>
+        {
+            Console.WriteLine("Connect !");
+
+            var sendMessage = "hello server";
+
+            while (true)
+            {
+                _connector.Send(sendMessage);
+
+                Thread.Sleep(200);
+            }
+        });
+    }
+
+    public void OnDisconnected()
+    {
+        Console.WriteLine("Disconnected...");
+    }
+}
+
 public class Program
 {
     static void Main(string[] args)
     {
-        var ip = IPAddress.Parse("127.0.0.1");
-        var portNumber = 8888;
+        var ip = "127.0.0.1";
+        var port = 8888;
 
-        var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        socket.Connect(new IPEndPoint(ip, portNumber));
+        var test = new TestClient(ip, port);
+        test.Run();
 
-        var sendMessage = "hello server";
-        var sendBuffer = Encoding.UTF8.GetBytes(sendMessage);
-        var recvBuffer = new byte[1024];
-
-        while (true)
-        {
-            socket.Send(sendBuffer);
-
-            Array.Clear(recvBuffer);
-            socket.Receive(recvBuffer);
-            var recvMessage = Encoding.UTF8.GetString(recvBuffer);
-            Console.WriteLine(recvMessage);
-
-            Thread.Sleep(200);
-        }
+        Console.ReadLine();
     }
 }

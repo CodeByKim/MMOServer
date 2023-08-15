@@ -1,28 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Core
 {
-    public abstract class Server
+    public class Server
     {
+        private DefaultObjectPool<ServerConnection> _connectionPool;
         protected Acceptor _acceptor;
 
         public int PortNumber { get; private set; }
 
         public Server(int port)
         {
-            PortNumber = port;
             _acceptor = new Acceptor(this);
+            _connectionPool = new DefaultObjectPool<ServerConnection>(new ConnectionPooledObjectPolicy(this), 100);
+
+            PortNumber = port;
         }
 
         public void Run()
         {
             var backlog = 100;
-            var acceptCount = 10;
-            _acceptor.Run(PortNumber, backlog, acceptCount);
+            var concuurentAcceptCount = 10;
+
+            _acceptor.Run(PortNumber, backlog, concuurentAcceptCount);
         }
 
-        public abstract void OnJoinConnection(Connection conn);
-        public abstract void OnLeaveConnection(Connection conn);
+        internal ServerConnection AcquireConnection()
+        {
+            return _connectionPool.Get();
+        }
+
+        public virtual void OnJoinConnection(ServerConnection conn)
+        {
+        }
+
+        public virtual void OnLeaveConnection(ServerConnection conn)
+        {
+            _connectionPool.Return(conn);
+        }
     }
 }

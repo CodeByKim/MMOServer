@@ -8,20 +8,18 @@ namespace Core
 {
     public class TcpSocket
     {
-        private Socket _socket;
         private SocketAsyncEventArgs _recvArgs;
         private SocketAsyncEventArgs _sendArgs;
         private int _recvBufferSize;
 
+        internal Action? OnCloseEventHandler { get; set; }
+        internal Action<byte[]>? OnReceiveEventHandler { get; set; }
+        internal Action? OnSendEventHandler { get; set; }
+
+        internal Socket? Socket { get; set; }
+
         public TcpSocket()
-            : this(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
         {
-        }
-
-        public TcpSocket(Socket socket)
-        {
-            _socket = socket;
-
             _recvBufferSize = 1024;
             _recvArgs = new SocketAsyncEventArgs();
             _recvArgs.SetBuffer(GetRecvBuffer(_recvBufferSize), 0, _recvBufferSize);
@@ -31,20 +29,25 @@ namespace Core
             _sendArgs.Completed += OnSendCompleted;
         }
 
-        public void Send(string message)
+        public void Send(byte[] sendBuffer)
         {
-            var sendBuffer = Encoding.UTF8.GetBytes(message);
+            if (Socket is null)
+                return;
+
             _sendArgs.SetBuffer(sendBuffer, 0, sendBuffer.Length);
 
-            var pending = _socket.SendAsync(_recvArgs);
+            var pending = Socket.SendAsync(_sendArgs);
             if (!pending)
-                OnSendCompleted(null, _recvArgs);
+                OnSendCompleted(null, _sendArgs);
         }
 
         internal void Listen(int port, int backlog)
         {
-            _socket.Bind(new IPEndPoint(IPAddress.Any, port));
-            _socket.Listen(backlog);
+            if (Socket is null)
+                return;
+
+            Socket.Bind(new IPEndPoint(IPAddress.Any, port));
+            Socket.Listen(backlog);
         }
 
         internal void AcceptAsnyc(int concurrentCount, Action<SocketError, Socket> onAccept)
@@ -61,9 +64,12 @@ namespace Core
 
         internal void ReceiveAsync()
         {
+            if (Socket is null)
+                return;
+
             _recvArgs.SetBuffer(GetRecvBuffer(_recvBufferSize), 0, _recvBufferSize);
 
-            var pending = _socket.ReceiveAsync(_recvArgs);
+            var pending = Socket.ReceiveAsync(_recvArgs);
             if (!pending)
                 OnReceiveCompleted(null, _recvArgs);
         }
@@ -75,8 +81,11 @@ namespace Core
 
         private void TryAccept(SocketAsyncEventArgs args)
         {
+            if (Socket is null)
+                return;
+
             args.AcceptSocket = null;
-            var pending = _socket.AcceptAsync(args);
+            var pending = Socket.AcceptAsync(args);
             if (!pending)
                 OnAcceotCompleted(null, args);
         }
@@ -109,18 +118,21 @@ namespace Core
             if (recvBuffer is null)
                 return;
 
-            var recvMessage = Encoding.UTF8.GetString(recvBuffer);
-            Console.WriteLine("hello client");
-
-            Send(recvMessage);
+            if (OnReceiveEventHandler != null)
+                OnReceiveEventHandler(recvBuffer);
 
             ReceiveAsync();
         }
 
         private void CloseSocket()
         {
-            //_server.OnLeaveConnection(this);
-            _socket.Close();
+            if (Socket is null)
+                return;
+
+            Socket.Close();
+
+            if (OnCloseEventHandler != null)
+                OnCloseEventHandler();
         }
     }
 }

@@ -13,10 +13,11 @@ namespace Core
         public Acceptor(Server server)
         {
             _socket = new TcpSocket();
+            _socket.Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _server = server;
         }
 
-        public void Run(int port, int backlog, int acceptCount)
+        public void Run(int port, int backlog, int concurrentCount = 1)
         {
             _socket.Listen(port, backlog);
 
@@ -28,8 +29,10 @@ namespace Core
                 if (socket is null)
                     return;
 
-                Connection conn = new Connection(socket);
+                var conn = _server.AcquireConnection();
+                conn.Initialize(socket);
                 _server.OnJoinConnection(conn);
+
                 conn.DoReceive();
             });
         }
