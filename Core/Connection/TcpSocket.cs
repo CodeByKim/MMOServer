@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Buffer;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -10,23 +11,25 @@ namespace Core.Connection
     {
         private SocketAsyncEventArgs _recvArgs;
         private SocketAsyncEventArgs _sendArgs;
-        private int _recvBufferSize;
+        private RingBuffer _receiveBuffer;
+        private RingBuffer _sendBuffer;
 
         internal Action? OnCloseEventHandler { get; set; }
-        internal Action<byte[]>? OnReceiveEventHandler { get; set; }
+        internal Action<RingBuffer, int>? OnReceiveEventHandler { get; set; }
         internal Action? OnSendEventHandler { get; set; }
 
         internal Socket? Socket { get; set; }
 
         public TcpSocket()
         {
-            _recvBufferSize = 1024;
             _recvArgs = new SocketAsyncEventArgs();
-            _recvArgs.SetBuffer(GetRecvBuffer(_recvBufferSize), 0, _recvBufferSize);
             _recvArgs.Completed += OnReceiveCompleted;
 
             _sendArgs = new SocketAsyncEventArgs();
             _sendArgs.Completed += OnSendCompleted;
+
+            _receiveBuffer = new RingBuffer(15);
+            _sendBuffer = new RingBuffer(15);
         }
 
         public void Send(byte[] sendBuffer)
@@ -46,16 +49,11 @@ namespace Core.Connection
             if (Socket is null)
                 return;
 
-            _recvArgs.SetBuffer(GetRecvBuffer(_recvBufferSize), 0, _recvBufferSize);
+            _receiveBuffer.RegisterToReceive(_recvArgs);
 
             var pending = Socket.ReceiveAsync(_recvArgs);
             if (!pending)
                 OnReceiveCompleted(null, _recvArgs);
-        }
-
-        private byte[] GetRecvBuffer(int size)
-        {
-            return new byte[size];
         }
 
         private void OnSendCompleted(object? sender, SocketAsyncEventArgs args)
@@ -78,8 +76,10 @@ namespace Core.Connection
             if (recvBuffer is null)
                 return;
 
+            _receiveBuffer.OnReceiveCompleted(bytesTransferred);
+
             if (OnReceiveEventHandler != null)
-                OnReceiveEventHandler(recvBuffer);
+                OnReceiveEventHandler(_receiveBuffer, bytesTransferred);
 
             ReceiveAsync();
         }

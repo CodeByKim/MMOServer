@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace Core.Buffer
 {
@@ -19,6 +20,11 @@ namespace Core.Buffer
             _bufferFront = 0;
             _bufferRear = 0;
             UseSize = 0;
+        }
+
+        public void RegisterToReceive(SocketAsyncEventArgs args)
+        {
+            args.SetBuffer(_buffer, _bufferRear, GetDirectEnqueueSize());
         }
 
         public bool Enqueue(byte[] srcData)
@@ -73,6 +79,15 @@ namespace Core.Buffer
             return data;
         }
 
+        public void OnReceiveCompleted(int bytesTransferred)
+        {
+            UseSize += bytesTransferred;
+            _bufferRear += bytesTransferred;
+
+            if (_bufferRear == BufferEnd)
+                _bufferRear = 0;
+        }
+
         public bool IsEmpty()
         {
             return UseSize == 0;
@@ -83,6 +98,22 @@ namespace Core.Buffer
             Array.Clear(_buffer);
             _bufferFront = 0;
             _bufferRear = 0;
+        }
+
+        private int GetDirectEnqueueSize()
+        {
+            if (_bufferFront <= _bufferRear)
+                return BufferEnd - _bufferRear;
+            else
+                return _bufferFront - _bufferRear;
+        }
+
+        private int GetDirectDequeueSize()
+        {
+            if (_bufferFront <= _bufferRear)
+                return _bufferRear - _bufferFront;
+            else
+                return BufferEnd - _bufferFront;
         }
     }
 }

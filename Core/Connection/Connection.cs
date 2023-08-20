@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Buffer;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -47,10 +48,12 @@ namespace Core.Connection
             _socket.ReceiveAsync();
         }
 
-        internal void OnReceive(byte[] recvBuffer)
+        internal void OnReceive(RingBuffer receiveBuffer, int bytesTransferred)
         {
+            var buffer = receiveBuffer.Dequeue(bytesTransferred);
+
             // 패킷으로 만든다...
-            var packet = Encoding.UTF8.GetString(recvBuffer);
+            var packet = Encoding.UTF8.GetString(buffer);
 
             // 패킷 처리를 위임한다.
             OnPacketDispatch(packet);
