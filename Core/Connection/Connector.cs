@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 
+using Core.Packet;
+
 namespace Core.Connection
 {
     public class Connector : Connection
@@ -51,9 +53,9 @@ namespace Core.Connection
                 onConnect();
         }
 
-        protected override void OnPacketDispatch(string packet)
+        protected override void OnExtractPacket(PacketHeader header, byte[] packetBuffer)
         {
-            Console.WriteLine(packet);
+            //Console.WriteLine(packet);
         }
 
         protected override void OnClose()

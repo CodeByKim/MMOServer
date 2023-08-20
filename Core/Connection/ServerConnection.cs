@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Core.Packet;
+
 namespace Core.Connection
 {
     public class ServerConnection : Connection
@@ -12,9 +14,12 @@ namespace Core.Connection
             _server = server;
         }
 
-        protected override void OnPacketDispatch(string packet)
+        protected override void OnExtractPacket(PacketHeader header, byte[] packetBuffer)
         {
-            Console.WriteLine(packet);
+            var packet = _server.CreatePacket(header, packetBuffer);
+
+            // 임시
+            _server.PushPacket(packet);
         }
 
         protected override void OnClose()

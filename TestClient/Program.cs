@@ -1,4 +1,5 @@
 ﻿using Core.Connection;
+using Packet;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -26,11 +27,12 @@ public class TestClient
         {
             Console.WriteLine("Connect !");
 
-            var sendMessage = "hello server";
+            var packet = new PktEchoTest();
+            packet.echoMessage = "한글 테스트";
 
             while (true)
             {
-                _connector.Send(sendMessage);
+                _connector.Send(packet);
 
                 Thread.Sleep(200);
             }

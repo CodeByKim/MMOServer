@@ -1,4 +1,5 @@
 ﻿using Core.Buffer;
+using Core.Packet;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -20,9 +21,13 @@ namespace Core.Connection
             _socket = new TcpSocket();
         }
 
-        public void Send(string message)
+        public void Send(NetPacket packet)
         {
-            var sendBuffer = Encoding.UTF8.GetBytes(message);
+            packet.Serialize();
+            var sendBuffer = new byte[packet._header.Length];
+            Array.Copy(packet.buffer, 0, sendBuffer, 0, packet._header.Length);
+
+            //_socket.Send(packet.buffer);
             _socket.Send(sendBuffer);
         }
 
@@ -50,20 +55,38 @@ namespace Core.Connection
 
         internal void OnReceive(RingBuffer receiveBuffer, int bytesTransferred)
         {
-            var buffer = receiveBuffer.Dequeue(bytesTransferred);
+            while (receiveBuffer.UseSize > 0)
+            {
+                if (receiveBuffer.UseSize < PacketHeader.HeaderSize)
+                    return;
 
-            // 패킷으로 만든다...
-            var packet = Encoding.UTF8.GetString(buffer);
+                var headerBuffer = receiveBuffer.Peek(PacketHeader.HeaderSize);
+                if (headerBuffer is null)
+                {
+                    _socket.CloseSocket();
+                    return;
+                }
 
-            // 패킷 처리를 위임한다.
-            OnPacketDispatch(packet);
+                var packetHeader = new PacketHeader(headerBuffer);
+                if ( receiveBuffer.UseSize < packetHeader.Length)
+                    return;
+
+                var packetBuffer = receiveBuffer.Dequeue(packetHeader.Length);
+                if (packetBuffer is null)
+                {
+                    _socket.CloseSocket();
+                    return;
+                }
+
+                OnExtractPacket(packetHeader, packetBuffer);
+            }
         }
 
         internal void OnSend()
         {
         }
 
-        protected abstract void OnPacketDispatch(string packet);
+        protected abstract void OnExtractPacket(PacketHeader header, byte[] packetBuffer);
 
         protected abstract void OnClose();
     }

@@ -28,8 +28,8 @@ namespace Core.Connection
             _sendArgs = new SocketAsyncEventArgs();
             _sendArgs.Completed += OnSendCompleted;
 
-            _receiveBuffer = new RingBuffer(15);
-            _sendBuffer = new RingBuffer(15);
+            _receiveBuffer = new RingBuffer(30);
+            _sendBuffer = new RingBuffer(30);
         }
 
         public void Send(byte[] sendBuffer)
@@ -54,6 +54,17 @@ namespace Core.Connection
             var pending = Socket.ReceiveAsync(_recvArgs);
             if (!pending)
                 OnReceiveCompleted(null, _recvArgs);
+        }
+
+        internal void CloseSocket()
+        {
+            if (Socket is null)
+                return;
+
+            Socket.Close();
+
+            if (OnCloseEventHandler != null)
+                OnCloseEventHandler();
         }
 
         private void OnSendCompleted(object? sender, SocketAsyncEventArgs args)
@@ -82,17 +93,6 @@ namespace Core.Connection
                 OnReceiveEventHandler(_receiveBuffer, bytesTransferred);
 
             ReceiveAsync();
-        }
-
-        private void CloseSocket()
-        {
-            if (Socket is null)
-                return;
-
-            Socket.Close();
-
-            if (OnCloseEventHandler != null)
-                OnCloseEventHandler();
         }
     }
 }

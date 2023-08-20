@@ -79,6 +79,28 @@ namespace Core.Buffer
             return data;
         }
 
+        public byte[]? Peek(int size)
+        {
+            if (size > UseSize)
+                return null;
+
+            var data = new byte[size];
+            if (size <= BufferEnd - _bufferFront)
+            {
+                Array.Copy(_buffer, _bufferFront, data, 0, size);
+            }
+            else
+            {
+                int frontDataSize = BufferEnd - _bufferFront;
+                Array.Copy(_buffer, _bufferFront, data, 0, frontDataSize);
+
+                int remainDataSize = size - frontDataSize;
+                Array.Copy(_buffer, 0, data, frontDataSize, remainDataSize);
+            }
+
+            return data;
+        }
+
         public void OnReceiveCompleted(int bytesTransferred)
         {
             UseSize += bytesTransferred;

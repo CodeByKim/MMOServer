@@ -25,9 +25,6 @@ namespace Core.Connection
                 if (socketError != SocketError.Success)
                     return;
 
-                if (socket is null)
-                    return;
-
                 var conn = _server.AcquireConnection();
                 conn.Initialize(socket);
                 _server.OnJoinConnection(conn);
@@ -61,6 +58,9 @@ namespace Core.Connection
         {
             var onAccept = args.UserToken as Action<SocketError, Socket>;
             if (onAccept is null)
+                return;
+
+            if (args.AcceptSocket is null)
                 return;
 
             onAccept(args.SocketError, args.AcceptSocket);
