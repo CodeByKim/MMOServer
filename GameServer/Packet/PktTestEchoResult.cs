@@ -12,17 +12,17 @@ namespace Packet
     {
         public string echoMessage;
 
-        public PktTestEchoResult() : base(2)
+        public PktTestEchoResult() : base(PacketId.PktTestEchoResult)
         {
             echoMessage = "";
         }
 
-        public PktTestEchoResult(PacketHeader header) : base(header)
+        public PktTestEchoResult(PacketHeader header) : base(header, null)
         {
             echoMessage = "";
         }
 
-        public override void Deserialize(byte[] packetBuffer)
+        public override void Deserialize()
         {
         }
 

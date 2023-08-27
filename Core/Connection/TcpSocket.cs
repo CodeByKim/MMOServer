@@ -28,8 +28,8 @@ namespace Core.Connection
             _sendArgs = new SocketAsyncEventArgs();
             _sendArgs.Completed += OnSendCompleted;
 
-            _receiveBuffer = new RingBuffer(30);
-            _sendBuffer = new RingBuffer(30);
+            _receiveBuffer = new RingBuffer(40);
+            _sendBuffer = new RingBuffer(40);
         }
 
         public void Send(byte[] sendBuffer)

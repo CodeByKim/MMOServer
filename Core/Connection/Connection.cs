@@ -24,8 +24,10 @@ namespace Core.Connection
         public void Send(NetPacket packet)
         {
             packet.Serialize();
-            var sendBuffer = new byte[packet._header.Length];
-            Array.Copy(packet.buffer, 0, sendBuffer, 0, packet._header.Length);
+
+            var packetSize = packet._header.Length;
+            var sendBuffer = new byte[packetSize];
+            Array.Copy(packet.Buffer, 0, sendBuffer, 0, packetSize);
 
             //_socket.Send(packet.buffer);
             _socket.Send(sendBuffer);

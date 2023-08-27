@@ -16,6 +16,7 @@ namespace Core.Packet
 
         public PacketHeader(short packetId)
         {
+            Length = HeaderSize;
             PacketId = packetId;
         }
 
@@ -28,30 +29,94 @@ namespace Core.Packet
 
     public abstract class NetPacket
     {
+        public byte[] Buffer => _buffer;
+
         public PacketHeader _header;
-        public byte[] buffer;   // 임시
+        protected byte[] _buffer;
+        protected int _bufferIndex;
 
         public NetPacket(short packetId)
         {
             _header = new PacketHeader(packetId);
-            buffer = new byte[1024];
+            _buffer = new byte[1024];       // 임시
+            _bufferIndex = PacketHeader.HeaderSize;
         }
 
-        public NetPacket(PacketHeader header)
+        public NetPacket(PacketHeader header, byte[] packetBuffer)
         {
             _header = header;
+            _buffer = packetBuffer;
+            _bufferIndex = PacketHeader.HeaderSize;
         }
 
         protected void SerializeHeader()
         {
-            var length = BitConverter.GetBytes(_header.Length);
-            var packetId = BitConverter.GetBytes(_header.PacketId);
+            var packetLength = PacketHeader.HeaderSize + _bufferIndex;
+            _header.Length = (short)packetLength;
+            var packetId = _header.PacketId;
 
-            Array.Copy(length, 0, buffer, 0, sizeof(short));
-            Array.Copy(packetId, 0, buffer, sizeof(short), sizeof(short));
+            var lengthBytes = BitConverter.GetBytes(packetLength);
+            var packetIdBytes = BitConverter.GetBytes(packetId);
+
+            Array.Copy(lengthBytes, 0, _buffer, 0, sizeof(short));
+            Array.Copy(packetIdBytes, 0, _buffer, sizeof(short), sizeof(short));
+        }
+
+        protected string GetString()
+        {
+            var stringLength = BitConverter.ToInt32(_buffer, _bufferIndex);
+            _bufferIndex += sizeof(int);
+
+            var data = Encoding.UTF8.GetString(_buffer, _bufferIndex, stringLength);
+            _bufferIndex += stringLength;
+
+            return data;
+        }
+
+        protected int GetInt()
+        {
+            var data = BitConverter.ToInt32(_buffer, _bufferIndex);
+            _bufferIndex += sizeof(int);
+
+            return data;
+        }
+
+        protected short GetShort()
+        {
+            var data = BitConverter.ToInt16(_buffer, _bufferIndex);
+            _bufferIndex += sizeof(short);
+
+            return data;
+        }
+
+        protected float GetFloat()
+        {
+            var data = BitConverter.ToSingle(_buffer, _bufferIndex);
+            _bufferIndex += sizeof(float);
+
+            return data;
+        }
+
+        protected void SetString(string data)
+        {
+            var utf8String = Encoding.UTF8.GetBytes(data);
+            var stringLength = BitConverter.GetBytes(utf8String.Length);
+
+            Array.Copy(stringLength, 0, _buffer, _bufferIndex, stringLength.Length);
+            _bufferIndex += stringLength.Length;
+
+            Array.Copy(utf8String, 0, _buffer, _bufferIndex, utf8String.Length);
+            _bufferIndex += utf8String.Length;
+        }
+
+        protected void SetInt(int data)
+        {
+            var bytes = BitConverter.GetBytes(data);
+            Array.Copy(bytes, 0, _buffer, _bufferIndex, sizeof(int));
         }
 
         public abstract void Serialize();
-        public abstract void Deserialize(byte[] packetBuffer);
+        public abstract void Deserialize();
+
     }
 }

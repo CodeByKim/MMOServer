@@ -52,7 +52,7 @@ namespace Core
             if (_packetFactory is null)
                 return null;
 
-            return _packetFactory.Create(header, packetBuffer);
+            return _packetFactory.CreatePacket(header, packetBuffer);
         }
     }
 }

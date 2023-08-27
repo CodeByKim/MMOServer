@@ -1,4 +1,5 @@
 ﻿using Core.Packet;
+using Packet;
 using System;
 using System.Collections.Generic;
 using System.Reflection.PortableExecutable;
@@ -12,12 +13,12 @@ namespace Packet
         {
         }
 
-        protected override NetPacket? Create(PacketHeader header)
+        protected override NetPacket? Create(PacketHeader header, byte[] packetBuffer)
         {
             var packetId = header.PacketId;
             switch (packetId)
             {
-                case 1: return new PktTestEcho(header);
+                case PacketId.PktTestEcho: return new PktTestEcho(header, packetBuffer);
             }
 
             return null;

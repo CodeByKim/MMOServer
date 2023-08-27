@@ -9,7 +9,6 @@ public class TestClient
 {
     private string _ip;
     private int _port;
-
     private Connector _connector;
 
     public TestClient(string ip, int port)
@@ -27,14 +26,14 @@ public class TestClient
         {
             Console.WriteLine("Connect !");
 
-            var packet = new PktEchoTest();
-            packet.echoMessage = "한글 테스트";
-
             while (true)
             {
+                var packet = new PktEchoTest();
+                packet.echoMessage = "한글 테스트";
+
                 _connector.Send(packet);
 
-                Thread.Sleep(200);
+                Thread.Sleep(100);
             }
         });
     }

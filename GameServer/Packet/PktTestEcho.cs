@@ -12,24 +12,21 @@ namespace Packet
     {
         public string echoMessage;
 
-        public PktTestEcho() : base(1)
+        public PktTestEcho(short packetId)
+            : base(packetId)
         {
             echoMessage = "";
         }
 
-        public PktTestEcho(PacketHeader header) : base(header)
+        public PktTestEcho(PacketHeader header, byte[] packetBuffer)
+            : base(header, packetBuffer)
         {
             echoMessage = "";
         }
 
-        public override void Deserialize(byte[] packetBuffer)
+        public override void Deserialize()
         {
-            // 여기서 디시리얼라이즈를 잘못했네
-            var startIndex = PacketHeader.HeaderSize;
-            var stringLength = BitConverter.ToInt32(packetBuffer, startIndex);
-            startIndex += sizeof(int);
-
-            echoMessage = Encoding.UTF8.GetString(packetBuffer, startIndex, stringLength);
+            echoMessage = GetString();
         }
 
         public override void Serialize()

@@ -11,29 +11,19 @@ namespace Packet
     {
         public string echoMessage;
 
-        public PktEchoTest() : base(1)
+        public PktEchoTest() : base(PacketId.PktTestEcho)
         {
             echoMessage = "";
-    }
+        }
 
-        public override void Deserialize(byte[] packetBuffer)
+        public override void Deserialize()
         {
         }
 
         public override void Serialize()
         {
-            var utf8String = Encoding.UTF8.GetBytes(echoMessage);
-            var stringLength = BitConverter.GetBytes(utf8String.Length);
+            SetString(echoMessage);
 
-            var bufferIndex = (int)PacketHeader.HeaderSize;
-            Array.Copy(stringLength, 0, buffer, bufferIndex, stringLength.Length);
-            bufferIndex += stringLength.Length;
-
-            Array.Copy(utf8String, 0, buffer, bufferIndex, utf8String.Length);
-            bufferIndex += utf8String.Length;
-
-            // 헤더 채우기
-            _header.Length = (short)bufferIndex;
             SerializeHeader();
         }
     }

@@ -12,18 +12,18 @@ namespace Core.Packet
         {
         }
 
-        public NetPacket? Create(PacketHeader header, byte[] packetBuffer)
+        public NetPacket? CreatePacket(PacketHeader header, byte[] packetBuffer)
         {
             var id = header.PacketId;
 
-            var packet = Create(header);
+            var packet = Create(header, packetBuffer);
             if (packet is null)
                 return null;
 
-            packet.Deserialize(packetBuffer);
+            packet.Deserialize();
             return packet;
         }
 
-        protected abstract NetPacket? Create(PacketHeader header);
+        protected abstract NetPacket? Create(PacketHeader header, byte[] packetBuffer);
     }
 }
